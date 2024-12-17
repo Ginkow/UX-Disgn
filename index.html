@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produits</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
+    <style>
+        .product-card {
+            margin-bottom: 20px;
+        }
+        .product-img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container my-5">
+    <h1 class="text-center">Nos Produits</h1>
+    <div id="product-container" class="row">
+    </div>
+    <div id="loading" class="text-center my-4" style="display: none;">
+        <p>Chargement...</p>
+    </div>
+</div>
+
+<script>
+    let page = 0;
+    let loading = false;
+
+    function loadProducts() {
+        if (loading) return;
+        loading = true;
+        document.getElementById('loading').style.display = 'block';
+
+        fetch('getProducts.php?page=' + page)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const productContainer = document.getElementById('product-container');
+                    data.forEach(produit => {
+                        const productCard = `
+                            <div class="col-md-3">
+                                <div class="card product-card">
+                                    <img src="${produit.image_url}" class="card-img-top product-img" alt="${produit.nom}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${produit.nom}</h5>
+                                        <p class="card-text">${produit.content}</p>  <!-- Changement ici -->
+                                        <p class="card-text"><strong>${produit.prix}€</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        productContainer.innerHTML += productCard;
+                    });
+                    page++;
+                } else {
+                    document.getElementById('loading').innerHTML = '<p>Pas plus de produits à charger.</p>';
+                }
+                loading = false;
+                document.getElementById('loading').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+    }
+
+    loadProducts();
+
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            loadProducts();
+        }
+    });
+</script>
+
+</body>
+</html>
